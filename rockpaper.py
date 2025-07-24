@@ -25,13 +25,26 @@ if "users" not in st.session_state:
     st.session_state.users = {}
 
 if username not in st.session_state.users:
+    # 새로운 사용자: 전체 초기화
     st.session_state.users[username] = {
-        "score": 15,   # ✅ 초기 점수 15점
+        "score": 15,
         "win": 0,
         "lose": 0,
-        "game_over": False  # 게임 종료 여부
+        "game_over": False
     }
+else:
+    # 기존 사용자: 필드 누락 시 보정
+    user_data = st.session_state.users[username]
+    if "score" not in user_data:
+        user_data["score"] = 15
+    if "win" not in user_data:
+        user_data["win"] = 0
+    if "lose" not in user_data:
+        user_data["lose"] = 0
+    if "game_over" not in user_data:
+        user_data["game_over"] = False
 
+# 사용자 데이터 참조
 user_data = st.session_state.users[username]
 
 # 게임 종료 시 처리
@@ -45,7 +58,7 @@ if user_data["game_over"]:
         st.balloons()
     st.stop()
 
-# 게임 선택 UI
+# 선택 및 실행
 choices = ["가위", "바위", "보"]
 user_choice = st.radio("🎮 당신의 선택은?", choices, horizontal=True)
 
@@ -70,14 +83,14 @@ if st.button("🎲 결과 보기"):
         user_data["game_over"] = True
         st.experimental_rerun()
 
-# 점수 및 기록 출력
+# 점수 출력
 st.markdown("---")
 st.subheader(f"📊 {username}님의 전적")
 st.write(f"✅ 승리 (비긴 횟수): {user_data['win']}회")
 st.write(f"❌ 패배: {user_data['lose']}회")
 st.write(f"💯 현재 점수: **{user_data['score']}점**")
 
-# 점수 초기화
+# 초기화 버튼
 if st.button("🧹 내 점수 초기화"):
     user_data["score"] = 15
     user_data["win"] = 0
