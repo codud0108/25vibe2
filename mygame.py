@@ -2,7 +2,7 @@ import streamlit as st
 import random
 from datetime import datetime
 
-# 별자리 정보 (날짜 범위)
+# 별자리 정보
 ZODIAC_SIGNS = [
     ("염소자리", (12, 22), (1, 19)),
     ("물병자리", (1, 20), (2, 18)),
@@ -18,15 +18,17 @@ ZODIAC_SIGNS = [
     ("사수자리", (11, 23), (12, 21)),
 ]
 
+# 별자리 판단 함수
 def get_zodiac(month, day):
     for sign, (start_m, start_d), (end_m, end_d) in ZODIAC_SIGNS:
-        if start_m > end_m:  # 연도 넘어감 (예: 염소자리)
+        if start_m > end_m:
             if (month == start_m and day >= start_d) or (month == end_m and day <= end_d):
                 return sign
         elif (month == start_m and day >= start_d) or (month == end_m and day <= end_d):
             return sign
     return None
 
+# 랜덤 날짜 생성
 def generate_random_date():
     while True:
         month = random.randint(1, 12)
@@ -41,16 +43,16 @@ def generate_random_date():
 st.set_page_config(page_title="별자리 날짜 맞히기 게임", page_icon="🌟")
 st.title("🌟 별자리로 날짜 맞히기 게임")
 
-# 초기화
+# 세션 초기화
 if "answer_date" not in st.session_state:
     st.session_state.answer_date = generate_random_date()
     st.session_state.zodiac = get_zodiac(*st.session_state.answer_date)
     st.session_state.tries = 0
-    st.session_state.max_tries = 5
+    st.session_state.max_tries = 10  # 여기서 기회를 10번으로 설정
     st.session_state.score = 0
     st.session_state.game_over = False
 
-# 게임 실행
+# 게임 진행
 if not st.session_state.game_over:
     st.subheader(f"⭐ 힌트: 이 날짜는 **{st.session_state.zodiac}**에 해당합니다!")
     user_month = st.number_input("몇 월인가요?", min_value=1, max_value=12, step=1)
@@ -69,7 +71,7 @@ if not st.session_state.game_over:
             else:
                 st.warning("❌ 틀렸습니다! 다시 시도해보세요.")
 
-            if st.session_state.tries >= st.session_state.max_attempts:
+            if st.session_state.tries >= st.session_state.max_tries:
                 st.session_state.game_over = True
         except:
             st.error("유효하지 않은 날짜입니다.")
@@ -88,7 +90,7 @@ else:
         st.session_state.score = 0
         st.session_state.game_over = False
 
-# 🌟 별자리 표 - 페이지 가장 아래에 표시
+# 별자리표 아래에 출력
 st.markdown("---")
 st.markdown("### 🗓️ 별자리 날짜표")
 for sign, start, end in ZODIAC_SIGNS:
