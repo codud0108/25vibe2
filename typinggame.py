@@ -2,95 +2,73 @@ import streamlit as st
 import random
 import time
 
-# 페이지 설정
-st.set_page_config(page_title="영어 타자 연습", page_icon="⌨️", layout="centered")
-st.title("⌨️ 영어 타자 연습 게임")
+# 설정
+st.set_page_config(page_title="🃏 같은 그림 맞히기 게임", layout="centered")
 
-# 탭 구분
-tab1, tab2 = st.tabs(["📘 문장 연습", "🟦 단어 연습"])
+# 제목
+st.title("🃏 같은 그림 맞히기 게임")
+st.caption("30초 안에 모든 그림을 맞혀보세요!")
 
-# 예시 문장 & 단어 데이터
-sentences = [
-    "The quick brown fox jumps over the lazy dog.",
-    "Typing practice makes you faster and more accurate.",
-    "Streamlit is an amazing tool for building apps.",
-    "Keep calm and code in Python.",
-    "Practice every day to improve your typing speed."
-]
+# 초기 세션 상태
+if "cards" not in st.session_state:
+    emojis = ["🐶", "🐱", "🐸", "🐵", "🐰", "🐼", "🐯", "🦊"]
+    cards = emojis * 2
+    random.shuffle(cards)
+    st.session_state.cards = cards
+    st.session_state.revealed = [False] * 16
+    st.session_state.matched = [False] * 16
+    st.session_state.selected = []
+    st.session_state.flips = 0
+    st.session_state.start_time = time.time()
+    st.session_state.game_over = False
 
-words = [
-    "apple", "banana", "computer", "streamlit", "python", "keyboard",
-    "education", "practice", "developer", "learning", "accuracy", "typing"
-]
+# 타이머 계산
+elapsed = int(time.time() - st.session_state.start_time)
+remaining_time = max(0, 30 - elapsed)
 
-# ---------------- 문장 연습 ----------------
-with tab1:
-    st.subheader("📘 문장 연습")
+# 게임 종료 처리
+if remaining_time == 0 and not st.session_state.game_over:
+    st.session_state.game_over = True
+    st.warning("⏰ 시간 초과! 게임이 끝났습니다.")
 
-    if "sentence" not in st.session_state:
-        st.session_state.sentence = random.choice(sentences)
-        st.session_state.s_start = None
-        st.session_state.s_end = None
-        st.session_state.s_finished = False
+# 타이머 표시
+st.subheader(f"⏱ 남은 시간: {remaining_time}초")
+st.write(f"🔁 뒤집은 횟수: {st.session_state.flips}")
 
-    if st.button("🔁 새 문장 받기", key="new_sentence"):
-        st.session_state.sentence = random.choice(sentences)
-        st.session_state.s_start = None
-        st.session_state.s_end = None
-        st.session_state.s_finished = False
-        st.experimental_rerun()
-        return  # rerun 이후 아래 코드 실행 방지
-
-    st.markdown("**💬 아래 문장을 정확히 입력하세요:**")
-    st.code(st.session_state.sentence)
-
-    s_input = st.text_area("✍️ 여기에 입력하세요:", key="sentence_input", height=100)
-
-    if s_input and st.session_state.s_start is None:
-        st.session_state.s_start = time.time()
-
-    if st.button("✅ 제출", key="submit_sentence") and s_input:
-        st.session_state.s_end = time.time()
-        st.session_state.s_finished = True
-
-    if st.session_state.s_finished:
-        total_time = round(st.session_state.s_end - st.session_state.s_start, 2)
-        correct = sum(1 for a, b in zip(st.session_state.sentence, s_input) if a == b)
-        accuracy = round((correct / len(st.session_state.sentence)) * 100, 2)
-        typo = sum(1 for a, b in zip(st.session_state.sentence, s_input) if a != b) + abs(len(st.session_state.sentence) - len(s_input))
-
-        st.success("🎉 결과")
-        st.write(f"⏱️ 걸린 시간: **{total_time}초**")
-        st.write(f"✅ 정확도: **{accuracy}%**")
-        st.write(f"❌ 오타 수: **{typo}개**")
-
-# ---------------- 단어 연습 ----------------
-with tab2:
-    st.subheader("🟦 단어 연습")
-
-    if "word" not in st.session_state:
-        st.session_state.word = random.choice(words)
-        st.session_state.word_score = 0
-        st.session_state.word_total = 0
-        st.session_state.word_result = ""
-
-    st.markdown("**🔤 아래 단어를 입력하세요:**")
-    st.header(f"`{st.session_state.word}`")
-
-    w_input = st.text_input("✍️ 단어 입력:", key="word_input")
-
-    if st.button("제출", key="submit_word"):
-        st.session_state.word_total += 1
-        if w_input.strip().lower() == st.session_state.word.lower():
-            st.session_state.word_score += 1
-            st.session_state.word_result = "✅ 정답입니다!"
+# 게임판 구성 (4x4)
+cols = st.columns(4)
+for i in range(16):
+    col = cols[i % 4]
+    with col:
+        if st.session_state.matched[i] or st.session_state.revealed[i]:
+            st.button(st.session_state.cards[i], key=f"card{i}", disabled=True)
         else:
-            st.session_state.word_result = f"❌ 오답입니다! 정답은 `{st.session_state.word}`"
+            if st.button("❓", key=f"card{i}"):
+                if not st.session_state.game_over and len(st.session_state.selected) < 2:
+                    st.session_state.revealed[i] = True
+                    st.session_state.selected.append(i)
+                    st.session_state.flips += 1
 
-        st.session_state.word = random.choice(words)
+# 두 장 선택됐을 때 매칭 처리
+if len(st.session_state.selected) == 2:
+    idx1, idx2 = st.session_state.selected
+    if st.session_state.cards[idx1] == st.session_state.cards[idx2]:
+        st.session_state.matched[idx1] = True
+        st.session_state.matched[idx2] = True
+    else:
+        time.sleep(1)
+        st.session_state.revealed[idx1] = False
+        st.session_state.revealed[idx2] = False
+    st.session_state.selected = []
+
+# 모든 매칭 완료 시 게임 승리
+if all(st.session_state.matched) and not st.session_state.game_over:
+    st.success("🎉 축하합니다! 모든 그림을 맞혔어요!")
+    st.session_state.game_over = True
+
+# 게임 다시 시작 버튼
+if st.session_state.game_over:
+    if st.button("🔄 다시 시작하기"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
         st.experimental_rerun()
-        return  # rerun 이후 코드 실행 방지
-
-    if st.session_state.word_result:
-        st.info(st.session_state.word_result)
-        st.write(f"🏁 점수: **{st.session_state.word_score} / {st.session_state.word_total}**")
