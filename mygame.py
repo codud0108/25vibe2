@@ -42,13 +42,14 @@ def generate_random_date():
 # 페이지 설정
 st.set_page_config(page_title="별자리 날짜 맞히기 게임", page_icon="🌟")
 st.title("🌟 별자리로 날짜 맞히기 게임")
+st.write('20번의 기회동안 최대한 많이 맞춰보세요')
 
 # 세션 초기화
 if "answer_date" not in st.session_state:
     st.session_state.answer_date = generate_random_date()
     st.session_state.zodiac = get_zodiac(*st.session_state.answer_date)
     st.session_state.tries = 0
-    st.session_state.max_tries = 10  # 여기서 기회를 10번으로 설정
+    st.session_state.max_tries = 20  # 여기서 기회를 20번으로 설정
     st.session_state.score = 0
     st.session_state.game_over = False
 
