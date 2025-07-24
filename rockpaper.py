@@ -24,8 +24,8 @@ if not username:
 if "users" not in st.session_state:
     st.session_state.users = {}
 
+# 사용자 필드 초기화 및 누락 보완
 if username not in st.session_state.users:
-    # 새로운 사용자: 전체 초기화
     st.session_state.users[username] = {
         "score": 15,
         "win": 0,
@@ -33,16 +33,11 @@ if username not in st.session_state.users:
         "game_over": False
     }
 else:
-    # 기존 사용자: 필드 누락 시 보정
     user_data = st.session_state.users[username]
-    if "score" not in user_data:
-        user_data["score"] = 15
-    if "win" not in user_data:
-        user_data["win"] = 0
-    if "lose" not in user_data:
-        user_data["lose"] = 0
-    if "game_over" not in user_data:
-        user_data["game_over"] = False
+    user_data.setdefault("score", 15)
+    user_data.setdefault("win", 0)
+    user_data.setdefault("lose", 0)
+    user_data.setdefault("game_over", False)
 
 # 사용자 데이터 참조
 user_data = st.session_state.users[username]
@@ -58,7 +53,7 @@ if user_data["game_over"]:
         st.balloons()
     st.stop()
 
-# 선택 및 실행
+# 선택지 및 사용자 입력
 choices = ["가위", "바위", "보"]
 user_choice = st.radio("🎮 당신의 선택은?", choices, horizontal=True)
 
@@ -78,19 +73,20 @@ if st.button("🎲 결과 보기"):
         user_data["score"] -= 3
         user_data["lose"] += 1
 
-    # 게임 종료 조건 확인
+    # 종료 조건 검사 후 rerun
     if user_data["score"] <= 0 or user_data["score"] >= 50:
         user_data["game_over"] = True
         st.experimental_rerun()
+        st.stop()
 
-# 점수 출력
+# 점수 및 전적 출력
 st.markdown("---")
 st.subheader(f"📊 {username}님의 전적")
 st.write(f"✅ 승리 (비긴 횟수): {user_data['win']}회")
 st.write(f"❌ 패배: {user_data['lose']}회")
 st.write(f"💯 현재 점수: **{user_data['score']}점**")
 
-# 초기화 버튼
+# 점수 초기화 버튼
 if st.button("🧹 내 점수 초기화"):
     user_data["score"] = 15
     user_data["win"] = 0
