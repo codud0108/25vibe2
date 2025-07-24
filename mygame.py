@@ -1,45 +1,94 @@
 import streamlit as st
 import random
+from datetime import datetime
 
-st.set_page_config(page_title="날짜 맞히기 게임", page_icon="📅")
-st.title("📅 1월 날짜 맞히기 게임")
-st.markdown("1월 1일부터 1월 31일 중 제가 생각한 날짜를 맞혀보세요! 🎯")
+# 별자리 정보 (날짜 범위: 월/일 시작~끝)
+ZODIAC_SIGNS = [
+    ("염소자리", (12, 22), (1, 19)),
+    ("물병자리", (1, 20), (2, 18)),
+    ("물고기자리", (2, 19), (3, 20)),
+    ("양자리",   (3, 21), (4, 19)),
+    ("황소자리", (4, 20), (5, 20)),
+    ("쌍둥이자리", (5, 21), (6, 21)),
+    ("게자리",   (6, 22), (7, 22)),
+    ("사자자리", (7, 23), (8, 22)),
+    ("처녀자리", (8, 23), (9, 22)),
+    ("천칭자리", (9, 23), (10, 22)),
+    ("전갈자리", (10, 23), (11, 22)),
+    ("사수자리", (11, 23), (12, 21)),
+]
 
-# 초기 세션 상태 설정
-if "target_date" not in st.session_state:
-    st.session_state.target_date = random.randint(1, 31)
+# 별자리 찾기 함수
+def get_zodiac(month, day):
+    for sign, (start_m, start_d), (end_m, end_d) in ZODIAC_SIGNS:
+        if (month == start_m and day >= start_d) or (month == end_m and day <= end_d):
+            return sign
+        elif start_m > end_m:  # 연도 넘어가는 경우 (예: 염소자리)
+            if (month == start_m and day >= start_d) or (month == end_m and day <= end_d):
+                return sign
+    return None
+
+# 랜덤 날짜 생성
+def generate_random_date():
+    while True:
+        month = random.randint(1, 12)
+        day = random.randint(1, 31)
+        try:
+            datetime(2024, month, day)  # 날짜 유효성 검사 (윤년)
+            return (month, day)
+        except:
+            continue
+
+st.set_page_config(page_title="별자리 날짜 맞히기 게임", page_icon="🌟")
+st.title("🌟 별자리로 날짜 맞히기 게임")
+
+# 🔮 별자리 테이블
+st.markdown("### 🗓️ 별자리 날짜표")
+for sign, start, end in ZODIAC_SIGNS:
+    st.markdown(f"- **{sign}**: {start[0]}월 {start[1]}일 ~ {end[0]}월 {end[1]}일")
+
+# 🧠 세션 초기화
+if "answer_date" not in st.session_state:
+    st.session_state.answer_date = generate_random_date()
+    st.session_state.zodiac = get_zodiac(*st.session_state.answer_date)
+    st.session_state.tries = 0
+    st.session_state.max_tries = 5
     st.session_state.score = 0
-    st.session_state.attempts = 0
-    st.session_state.max_attempts = 5
     st.session_state.game_over = False
 
-# 게임 상태
+# 🎯 게임 진행
 if not st.session_state.game_over:
-    user_date = st.number_input("1월 며칠이라고 생각하세요?", min_value=1, max_value=31, step=1)
+    st.subheader(f"⭐ 힌트: 이 날짜는 **{st.session_state.zodiac}**에 해당합니다!")
+    user_month = st.number_input("몇 월인가요?", min_value=1, max_value=12, step=1)
+    user_day = st.number_input("몇 일인가요?", min_value=1, max_value=31, step=1)
 
     if st.button("제출"):
-        st.session_state.attempts += 1
+        try:
+            datetime(2024, user_month, user_day)  # 유효 날짜인지 확인
+            st.session_state.tries += 1
+            if (user_month, user_day) == st.session_state.answer_date:
+                st.success("🎉 정답입니다! 날짜를 정확히 맞히셨어요!")
+                st.session_state.score += 1
+                st.session_state.answer_date = generate_random_date()
+                st.session_state.zodiac = get_zodiac(*st.session_state.answer_date)
+            else:
+                st.warning("❌ 틀렸습니다! 다시 시도해보세요.")
 
-        if user_date == st.session_state.target_date:
-            st.success(f"정답입니다! 🎉 {user_date}일이 맞습니다!")
-            st.session_state.score += 1
-            st.session_state.target_date = random.randint(1, 31)  # 새로운 날짜 설정
-        else:
-            st.warning(f"틀렸어요! 😢 제가 생각한 날짜는 {st.session_state.target_date}일이었어요.")
-            st.session_state.target_date = random.randint(1, 31)
+            if st.session_state.tries >= st.session_state.max_tries:
+                st.session_state.game_over = True
+        except:
+            st.error("유효하지 않은 날짜입니다.")
 
-        # 시도 횟수 초과 시 게임 종료
-        if st.session_state.attempts >= st.session_state.max_attempts:
-            st.session_state.game_over = True
-
-    st.info(f"현재 점수: **{st.session_state.score}점** / 시도: {st.session_state.attempts}/{st.session_state.max_attempts}")
+    st.info(f"현재 점수: **{st.session_state.score}점** | 시도: {st.session_state.tries}/{st.session_state.max_tries}")
 
 else:
-    st.markdown(f"## 🎮 게임 종료!")
+    st.markdown("## 🎮 게임 종료!")
+    answer = st.session_state.answer_date
+    st.markdown(f"정답 날짜는 **{answer[0]}월 {answer[1]}일** 이었습니다!")
     st.success(f"최종 점수: **{st.session_state.score}점**")
     if st.button("🔁 다시 시작하기"):
-        # 초기화
-        st.session_state.target_date = random.randint(1, 31)
+        st.session_state.answer_date = generate_random_date()
+        st.session_state.zodiac = get_zodiac(*st.session_state.answer_date)
+        st.session_state.tries = 0
         st.session_state.score = 0
-        st.session_state.attempts = 0
         st.session_state.game_over = False
