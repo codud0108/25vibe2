@@ -6,7 +6,7 @@ import time
 st.set_page_config(page_title="🃏 같은 그림 맞히기 게임", layout="wide")
 
 st.title("🃏 같은 그림 맞히기 게임")
-st.caption("난이도를 선택하고 2분 30초 안에 모든 그림을 맞혀보세요!")
+st.caption("난이도를 선택하고 2분 30초 안에 모든 그림을 맞혀보세요!, 카드를 더블클릭하면 뒤집어집니다.")
 
 # 초기 상태 설정
 if "initialized" not in st.session_state:
