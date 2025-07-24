@@ -6,7 +6,7 @@ import time
 st.set_page_config(page_title="🃏 같은 그림 맞히기 게임", layout="wide")
 
 st.title("🃏 같은 그림 맞히기 게임")
-st.caption("난이도를 선택하고 2분 안에 모든 그림을 맞혀보세요!")
+st.caption("난이도를 선택하고 2분 30초 안에 모든 그림을 맞혀보세요!")
 
 # 초기 상태 설정
 if "initialized" not in st.session_state:
@@ -50,7 +50,7 @@ if not st.session_state.initialized:
     st.session_state.rows = (len(cards) // 6)  # 6개씩 열 구성
 
 # 시간 계산
-TIME_LIMIT = 120
+TIME_LIMIT = 150
 elapsed = int(time.time() - st.session_state.start_time)
 remaining_time = max(0, TIME_LIMIT - elapsed)
 
