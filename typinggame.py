@@ -2,9 +2,11 @@ import streamlit as st
 import random
 import time
 
+# 페이지 설정
 st.set_page_config(page_title="영어 타자 연습", page_icon="⌨️", layout="centered")
 st.title("⌨️ 영어 타자 연습 게임")
 
+# 탭 구분
 tab1, tab2 = st.tabs(["📘 문장 연습", "🟦 단어 연습"])
 
 # 예시 문장 & 단어 데이터
@@ -24,7 +26,7 @@ words = [
 # ---------------- 문장 연습 ----------------
 with tab1:
     st.subheader("📘 문장 연습")
-    
+
     if "sentence" not in st.session_state:
         st.session_state.sentence = random.choice(sentences)
         st.session_state.s_start = None
@@ -37,6 +39,7 @@ with tab1:
         st.session_state.s_end = None
         st.session_state.s_finished = False
         st.experimental_rerun()
+        return  # rerun 이후 아래 코드 실행 방지
 
     st.markdown("**💬 아래 문장을 정확히 입력하세요:**")
     st.code(st.session_state.sentence)
@@ -86,6 +89,7 @@ with tab2:
 
         st.session_state.word = random.choice(words)
         st.experimental_rerun()
+        return  # rerun 이후 코드 실행 방지
 
     if st.session_state.word_result:
         st.info(st.session_state.word_result)
