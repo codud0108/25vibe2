@@ -11,7 +11,7 @@ PERIODS = [f'{i+1}교시' for i in range(NUM_PERIODS)]
 
 # 학년/반 선택
 grade = st.selectbox("학년 선택", options=["1학년", "2학년", "3학년"])
-class_num = st.selectbox("반 선택", options=["1반", "2반", "3반"])
+class_num = st.selectbox("반 선택", options=["1반", "2반", "3반","4반", "5반", "6반", "7반","8반", "9반", "10반"])
 
 st.markdown("---")
 
