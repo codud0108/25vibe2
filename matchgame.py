@@ -5,7 +5,7 @@ import time
 # 설정
 st.set_page_config(page_title="🃏 같은 그림 맞히기 게임", layout="wide")
 st.title("🃏 같은 그림 맞히기 게임")
-st.caption("2분 30초 안에 카드를 모두 맞히세요! 라운드마다 카드 쌍 수가 2배로 증가합니다.")
+st.caption("3분 안에 카드를 모두 맞히세요!")
 
 # 초기 상태 설정
 if "pair_count" not in st.session_state:
@@ -52,7 +52,7 @@ if not st.session_state.initialized:
     init_round()
 
 # 타이머 설정
-TIME_LIMIT = 150
+TIME_LIMIT = 180
 elapsed = int(time.time() - st.session_state.start_time)
 remaining_time = max(0, TIME_LIMIT - elapsed)
 
